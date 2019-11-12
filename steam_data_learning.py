@@ -14,13 +14,17 @@ def steam_file_processor(file_name):
     """
 
     """
-df = pd.read_csv('steam.csv')
-df['positive_ratings_'] = df['positive_ratings'].astype(int)
-df['negative_ratings_'] = df['negative_ratings'].astype(int)
-df['owners_'] = df['owners'].astype(int) #might need to change, as it is a range, not a specific number
-df['average_playtime_'] = df['average_playtime'].astype(int)
-df['median_playtime_'] = df['median_playtime'].astype(int)
-df['price_'] = df['price'].astype(float)
+    df = pd.read_csv('steam.csv')
+    df['positive_ratings_'] = df['positive_ratings'].astype(int)
+    df['negative_ratings_'] = df['negative_ratings'].astype(int)
+    df['owners_'] = df['owners'].astype(int) #might need to change, as it is a range, not a specific number
+    df['average_playtime_'] = df['average_playtime'].astype(int)
+    df['median_playtime_'] = df['median_playtime'].astype(int)
+    df['price_'] = df['price'].astype(float)
+    #set our x and y
+    tree_regressor = DecisionTreeRegressor(criterion='mse') # taking Mean Square Error
+    
+
 
 def steam_learning_regression(data):
     """
