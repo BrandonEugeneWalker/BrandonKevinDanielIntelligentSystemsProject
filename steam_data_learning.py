@@ -2,6 +2,13 @@
 """
 Processes data from the steam store and then uses it to learn with Linear Regression, Decision Trees, and Random Forests. 
 """
+
+import numpy as np
+import panda as pd
+from sklearn import linear_model
+from sklearn import tree
+from sklearn.ensemble import RandomForestRegressor
+
 def steam_file_processor(file_name):
     """
 
