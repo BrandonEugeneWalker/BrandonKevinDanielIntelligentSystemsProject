@@ -12,6 +12,17 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
 def steam_file_processor(file_name):
+    df = pd.read_csv(file_name)
+    df['positive_ratings_'] = df['positive_ratings'].astype(int)
+    df['negative_ratings_'] = df['negative_ratings'].astype(int)
+    df['owners_'] = df['owners'].astype(int) #might need to change, as it is a range, not a specific number
+    df['average_playtime_'] = df['average_playtime'].astype(int)
+    df['median_playtime_'] = df['median_playtime'].astype(int)
+    df['price_'] = df['price'].astype(float)
+    #set our x and y
+    tree_regressor = DecisionTreeRegressor(criterion='mse') # taking Mean Square Error
+    
+def steam_data_cleaner():
     """
     Cleans and preprocesses the given csv file.
     Cleaning involves removing unused columns and converting columns we want to use into relevant data.
@@ -33,39 +44,32 @@ def steam_file_processor(file_name):
             There is no correlation between the appid (a id used by steam that is not seen by the user) and the price of a game.
             Including this column would simply create noise for what we want to predict.
         name
-
+            While a name can increase marketability and potential price of a game, a much larger machine learning program would be 
+            required to create a training dataset based on game names and their price and marketability.
         release_date
-
+            Insufficient data and record of a game's price over time to predict price correlating to its initial release date.
         english
-
+            A binary value to track if a game is released in English, does not correlate to the price of a game as internationally, 
+            English is a minority of languages and one of many spoken and used in games.
         developer
-
+            Like with names, no predictable correlation between a game's developer and the price without utilizing a larger and more 
+            complicated algorithm. Resulting in a noise column.
         publisher
-
+            A publisher can have influence on a games market share and value, but has questionable correlation and also goes into the depth
+            of larger and more complicated programs.
         platforms
-
+            Platforms have no influence on the game's price, just its availability of operating system. A noise column.
         required_age
-
+            No direct correlation to the game's price, games of all prices available in each age range / requirement.
         categories
-
+            No influence on price based on its categories. A noise column.
         genres
-
+            No direct influence on price. A noise column.
         steamspy_tags
-
+            A noise column due to the tags having no direct influence on price. Noise column.
         achievements
-
+            A game containing achievements does not affect the game's price. Noise column.
     """
-    df = pd.read_csv(file_name)
-    df['positive_ratings_'] = df['positive_ratings'].astype(int)
-    df['negative_ratings_'] = df['negative_ratings'].astype(int)
-    df['owners_'] = df['owners'].astype(int) #might need to change, as it is a range, not a specific number
-    df['average_playtime_'] = df['average_playtime'].astype(int)
-    df['median_playtime_'] = df['median_playtime'].astype(int)
-    df['price_'] = df['price'].astype(float)
-    #set our x and y
-    tree_regressor = DecisionTreeRegressor(criterion='mse') # taking Mean Square Error
-    
-def steam_data_cleaner():
     min_owner = 0
     max_owner = 1
     df = pd.read_csv("steam.csv")
@@ -78,7 +82,6 @@ def steam_data_cleaner():
         owner_avg_value = (min_owner_value + max_owner_value) / len(owner_range_array)
         df["owners"][i] = owner_avg_value
     df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
-
 
 def steam_learning_regression(data):
     """
