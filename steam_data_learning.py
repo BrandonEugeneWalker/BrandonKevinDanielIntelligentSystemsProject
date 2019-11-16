@@ -94,6 +94,11 @@ def steam_learning_tree(data):
     Trains a decision tree model using the given data.
     The trained model is returned.
     """
+    tree_train = data[["positive_raitings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
+    tree_label = data[["price"]]
+    tree_model = tree.DecisionTreeRegressor()
+    tree_model.fit(tree_train, tree_label)
+    return tree_model
 
 def steam_learning_forest(data):
     """
