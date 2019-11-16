@@ -88,6 +88,12 @@ def steam_learning_regression(data):
     Trains a multiple linear regression model using the given data.
     The trained model is returned.
     """
+    regression_train = data[["positive_raitings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
+    regression_label = data[["price"]]
+    regression_model = linear_model.LinearRegression()
+    regression_model.fit(regression_train, regression_label)
+    return regression_model
+
 
 def steam_learning_tree(data):
     """
