@@ -92,7 +92,7 @@ def steam_learning_regression(data):
     Trains a multiple linear regression model using the given data.
     The trained model is returned.
     """
-    regression_train = data[["positive_raitings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
+    regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
@@ -104,7 +104,7 @@ def steam_learning_tree(data):
     Trains a decision tree model using the given data.
     The trained model is returned.
     """
-    tree_train = data[["positive_raitings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
+    tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     tree_label = data[["price"]]
     tree_model = tree.DecisionTreeRegressor()
     tree_model.fit(tree_train, tree_label)
@@ -118,7 +118,7 @@ def steam_learning_forest(data):
     X = data.iloc[:, 0:5].values
     y = data.iloc[:, 5].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
-    regressor = RandomForestRegressor(n_estimators=700, random_state=0)
+    regressor = RandomForestRegressor(n_estimators=200, random_state=0)
     regressor.fit(X_train, y_train)
     y_pred = regressor.predict(X_test)
     print('Mean Absolute Error: ', metrics.mean_absolute_error(y_test, y_pred))
@@ -129,18 +129,21 @@ starting_csv = "steam.csv"
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
 
+#Running and timing Regression
 regression_start = datetime.now()
-#learned_regression = steam_learning_regression(df)
+learned_regression = steam_learning_regression(df)
 regression_end = datetime.now()
 regression_total_time = regression_end - regression_start
 print('Regression Total Time: ', regression_total_time)
 
+#Running and timing Decision Tree
 tree_start = datetime.now()
-#learned_tree = steam_learning_tree(df)
+learned_tree = steam_learning_tree(df)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
 
+#Running and timing Random Forest
 forest_start = datetime.now()
 steam_learning_forest(df)
 forest_end = datetime.now()
