@@ -95,13 +95,14 @@ def steam_learning_regression(data):
     Trains a multiple linear regression model using the given data.
     The trained model is returned.
     """
+    NUM_FOLDS = 10
     regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
 
     linear_classifier = linear_model.HuberRegressor()
-    skf = KFold(n_splits=270, random_state=None, shuffle=True)
+    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
     fold = 0
     overall_mse = []
@@ -118,14 +119,18 @@ def steam_learning_regression(data):
 
         overall_mse.append(mse)
         fold+= 1
-    print("Mean MSE over", 207, "folds:", mean(overall_mse))
-    return regression_model
+    final_results = str("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    print(final_results)
+    return final_results
 
 
 def steam_learning_tree(data):
     """
     Trains a decision tree model using the given data.
     The trained model is returned.
+    K-Fold fold amount was decided by running the model with diferent amounts of folds.
+    Taking roughly 32 seconds per fold we decided that 10 folds would be enough.
+    This is because while it only takes ~5 minutes for the tree folds to run it takes longer for the forest.
     """
     NUM_FOLDS = 10
     tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
@@ -148,7 +153,9 @@ def steam_learning_tree(data):
 
         overall_mse.append(mse)
         fold+= 1
-    print("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    final_results = str("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    print(final_results)
+    return final_results
 
 def steam_learning_forest(data):
     """
@@ -182,7 +189,9 @@ def steam_learning_forest(data):
         overall_mse.append(mse)
         fold += 1
     
-    print("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    final_results = str("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    print(final_results)
+    return final_results
 
 
 starting_csv = "steam.csv"
@@ -191,23 +200,29 @@ df = steam_file_processor(clean_csv)
 
 #Running and timing Regression
 regression_start = datetime.now()
-learned_regression = steam_learning_regression(df)
+regression_results = steam_learning_regression(df)
 regression_end = datetime.now()
 regression_total_time = regression_end - regression_start
 print('Regression Total Time: ', regression_total_time)
 
 #Running and timing Decision Tree
 tree_start = datetime.now()
-steam_learning_tree(df)
+tree_results = steam_learning_tree(df)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
 
 #Running and timing Random Forest
 forest_start = datetime.now()
-steam_learning_forest(df)
+forest_results = steam_learning_forest(df)
 forest_end = datetime.now()
 forest_total_time = forest_end - forest_start
 print('Random Forest Total Time: ', forest_total_time)
 
-#then verify results??
+#Printing results again.
+print("---Linear Regression---")
+print(regression_results)
+print("---Tree Regression---")
+print(tree_results)
+print("---Random Forest---")
+print(forest_results)
