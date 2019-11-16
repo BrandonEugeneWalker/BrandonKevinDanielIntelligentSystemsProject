@@ -15,6 +15,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 from numpy import mean
 
 def steam_file_processor(file_name):
@@ -126,10 +127,11 @@ def steam_learning_tree(data):
     Trains a decision tree model using the given data.
     The trained model is returned.
     """
+    NUM_FOLDS = 10
     tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
     tree_label = data[["price"]]
     tree_classifier = DecisionTreeRegressor(criterion="mse")
-    skf = KFold(n_splits=270, random_state=None, shuffle=True)
+    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
     fold = 0
     overall_mse = []
@@ -146,7 +148,7 @@ def steam_learning_tree(data):
 
         overall_mse.append(mse)
         fold+= 1
-    print("Mean MSE over", 207, "folds:", mean(overall_mse))
+    print("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
 
 def steam_learning_forest(data):
     """
@@ -156,15 +158,31 @@ def steam_learning_forest(data):
     At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
     """
     trees = 200
+    NUM_FOLDS = 10
+
     X = data.iloc[:, 0:5].values
     y = data.iloc[:, 5].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
+    skf = StratifiedKFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
     regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
-    regressor.fit(X_train, y_train)
-    y_pred = regressor.predict(X_test)
-    mean_squared_error = metrics.mean_squared_error(y_test, y_pred)
-    root_mean_squared_error = np.sqrt(mean_squared_error)
-    return root_mean_squared_error
+
+    fold = 0
+    overall_mse = []
+    for train_index, test_index in skf.split(X, y):
+
+        x_train_fold = [df.loc[i] for i in train_index]
+        y_train_fold = [df.loc[i] for i in train_index]
+        x_test_fold = [df.loc[i] for i in test_index]
+        y_test_fold = [df.loc[i] for i in test_index]
+
+        regressor.fit(x_train_fold, y_train_fold)
+        preds = regressor.predict(x_test_fold)
+        mse = metrics.mean_squared_error(y_test_fold, preds)
+        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+
+        overall_mse.append(mse)
+        fold += 1
+    
+    print("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
 
 
 starting_csv = "steam.csv"
