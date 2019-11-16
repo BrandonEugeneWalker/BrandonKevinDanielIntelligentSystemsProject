@@ -114,11 +114,14 @@ def steam_learning_forest(data):
     """
     Trains a random forest model using the given data.
     The trained model is returned.
+    Number of trees was measured for time efficiency after the rate of decrease in the error diminished. 
+    At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
     """
+    trees = 200
     X = data.iloc[:, 0:5].values
     y = data.iloc[:, 5].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
-    regressor = RandomForestRegressor(n_estimators=200, random_state=0)
+    regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
     regressor.fit(X_train, y_train)
     y_pred = regressor.predict(X_test)
     print('Mean Absolute Error: ', metrics.mean_absolute_error(y_test, y_pred))
