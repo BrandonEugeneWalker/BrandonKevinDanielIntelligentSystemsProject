@@ -98,6 +98,26 @@ def steam_learning_regression(data):
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
+
+    tree_classifier = DecisionTreeRegressor(criterion="mse")
+    skf = KFold(n_splits=270, random_state=None, shuffle=True)
+
+    fold = 0
+    overall_mse = []
+    for train_index, test_index in skf.split(regression_train, regression_label):
+        x_train_fold = [df.loc[i] for i in train_index]
+        y_train_fold = [df.loc[i] for i in train_index]
+        x_test_fold = [df.loc[i] for i in test_index]
+        y_test_fold = [df.loc[i] for i in test_index]
+
+        tree_classifier.fit(x_train_fold, y_train_fold)
+        preds = tree_classifier.predict(x_test_fold)
+        mse = metrics.mean_squared_error(y_test_fold, preds)
+        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+
+        overall_mse.append(mse)
+        fold+= 1
+    print("Mean MSE over", 207, "folds:", mean(overall_mse))
     return regression_model
 
 
