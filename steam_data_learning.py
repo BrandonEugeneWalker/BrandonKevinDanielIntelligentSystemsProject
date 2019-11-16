@@ -15,14 +15,14 @@ def steam_file_processor(file_name):
     df = pd.read_csv(file_name)
     df['positive_ratings_'] = df['positive_ratings'].astype(int)
     df['negative_ratings_'] = df['negative_ratings'].astype(int)
-    df['owners_'] = df['owners'].astype(int) #might need to change, as it is a range, not a specific number
+    df['owners_'] = df['owners'].astype(float)
     df['average_playtime_'] = df['average_playtime'].astype(int)
     df['median_playtime_'] = df['median_playtime'].astype(int)
     df['price_'] = df['price'].astype(float)
-    #set our x and y
-    tree_regressor = DecisionTreeRegressor(criterion='mse') # taking Mean Square Error
     
-def steam_data_cleaner():
+    return df
+    
+def steam_data_cleaner(file_name):
     """
     Cleans and preprocesses the given csv file.
     Cleaning involves removing unused columns and converting columns we want to use into relevant data.
@@ -72,7 +72,7 @@ def steam_data_cleaner():
     """
     min_owner = 0
     max_owner = 1
-    df = pd.read_csv("steam.csv")
+    df = pd.read_csv(file_name)
     steam_row_length = len(df.index)
     for i in range(0, steam_row_length):
         owner_range = df["owners"][i]
@@ -100,6 +100,14 @@ def steam_learning_forest(data):
     Trains a random forest model using the given data.
     The trained model is returned.
     """
+    
 
 
-steam_data_cleaner()
+starting_csv = "steam.csv"
+clean_csv = "steam_cleaned.csv"
+df = steam_file_processor(clean_csv)
+#learned_regression = steam_learning_regression(df)
+#learned_tree = steam_learning_tree(df)
+#learned_forest = steam_learning_forest(df)
+
+#then verify results??
