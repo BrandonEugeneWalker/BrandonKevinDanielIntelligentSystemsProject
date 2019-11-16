@@ -52,7 +52,7 @@ def steam_file_processor(file_name):
 
         steamspy_tags
 
-        acheivements
+        achievements
 
     """
     df = pd.read_csv(file_name)
@@ -70,7 +70,6 @@ def steam_data_cleaner():
     max_owner = 1
     df = pd.read_csv("steam.csv")
     steam_row_length = len(df.index)
-    print(steam_row_length)
     for i in range(0, steam_row_length):
         owner_range = df["owners"][i]
         owner_range_array = owner_range.split("-")
@@ -78,7 +77,7 @@ def steam_data_cleaner():
         max_owner_value = int(owner_range_array[max_owner])
         owner_avg_value = (min_owner_value + max_owner_value) / len(owner_range_array)
         df["owners"][i] = owner_avg_value
-    df.to_csv("steam_cleaned.csv")
+    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
 
 
 def steam_learning_regression(data):
