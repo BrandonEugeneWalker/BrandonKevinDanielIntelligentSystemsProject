@@ -178,7 +178,7 @@ print('Regression Total Time: ', regression_total_time)
 
 #Running and timing Decision Tree
 tree_start = datetime.now()
-#steam_learning_tree(df)
+steam_learning_tree(df)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
