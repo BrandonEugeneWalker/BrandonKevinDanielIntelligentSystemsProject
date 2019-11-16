@@ -124,9 +124,9 @@ def steam_learning_forest(data):
     regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
     regressor.fit(X_train, y_train)
     y_pred = regressor.predict(X_test)
-    print('Mean Absolute Error: ', metrics.mean_absolute_error(y_test, y_pred))
-    print('Mean Squared Error: ', metrics.mean_squared_error(y_test, y_pred))
-    print('Root Mean Squared Error: ', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+    mean_squared_error = metrics.mean_squared_error(y_test, y_pred)
+    root_mean_squared_error = np.sqrt(mean_squared_error)
+    return root_mean_squared_error
 
 starting_csv = "steam.csv"
 clean_csv = "steam_cleaned.csv"
