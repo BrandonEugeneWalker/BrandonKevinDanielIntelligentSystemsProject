@@ -100,7 +100,7 @@ def steam_learning_regression(data):
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
 
-    tree_classifier = DecisionTreeRegressor(criterion="mse")
+    linear_classifier = linear_model.HuberRegressor()
     skf = KFold(n_splits=270, random_state=None, shuffle=True)
 
     fold = 0
@@ -111,8 +111,8 @@ def steam_learning_regression(data):
         x_test_fold = [df.loc[i] for i in test_index]
         y_test_fold = [df.loc[i] for i in test_index]
 
-        tree_classifier.fit(x_train_fold, y_train_fold)
-        preds = tree_classifier.predict(x_test_fold)
+        linear_classifier.fit(x_train_fold, y_train_fold)
+        preds = linear_classifier.predict(x_test_fold)
         mse = metrics.mean_squared_error(y_test_fold, preds)
         print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
 
