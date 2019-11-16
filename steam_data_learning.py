@@ -14,6 +14,8 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import KFold
+from numpy import mean
 
 def steam_file_processor(file_name):
     df = pd.read_csv(file_name)
@@ -92,7 +94,7 @@ def steam_learning_regression(data):
     Trains a multiple linear regression model using the given data.
     The trained model is returned.
     """
-    regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
+    regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
@@ -104,11 +106,27 @@ def steam_learning_tree(data):
     Trains a decision tree model using the given data.
     The trained model is returned.
     """
-    tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
+    tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
     tree_label = data[["price"]]
-    tree_model = tree.DecisionTreeRegressor()
-    tree_model.fit(tree_train, tree_label)
-    return tree_model
+    tree_classifier = DecisionTreeRegressor(criterion="mse")
+    skf = KFold(n_splits=270, random_state=None, shuffle=True)
+
+    fold = 0
+    overall_mse = []
+    for train_index, test_index in skf.split(tree_train, tree_label):
+        x_train_fold = [df.loc[i] for i in train_index]
+        y_train_fold = [df.loc[i] for i in train_index]
+        x_test_fold = [df.loc[i] for i in test_index]
+        y_test_fold = [df.loc[i] for i in test_index]
+
+        tree_classifier.fit(x_train_fold, y_train_fold)
+        preds = tree_classifier.predict(x_test_fold)
+        mse = metrics.mean_squared_error(y_test_fold, preds)
+        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+
+        overall_mse.append(mse)
+        fold+= 1
+    print("Mean MSE over", 207, "folds:", mean(overall_mse))
 
 def steam_learning_forest(data):
     """
@@ -128,6 +146,7 @@ def steam_learning_forest(data):
     print('Mean Squared Error: ', metrics.mean_squared_error(y_test, y_pred))
     print('Root Mean Squared Error: ', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
 
+
 starting_csv = "steam.csv"
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
@@ -141,7 +160,7 @@ print('Regression Total Time: ', regression_total_time)
 
 #Running and timing Decision Tree
 tree_start = datetime.now()
-learned_tree = steam_learning_tree(df)
+steam_learning_tree(df)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
