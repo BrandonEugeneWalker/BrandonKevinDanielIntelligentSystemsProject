@@ -5,6 +5,7 @@ Processes data from the steam store and then uses it to learn with Linear Regres
 
 import numpy as np
 import pandas as pd
+import csv
 from sklearn import linear_model
 from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
@@ -64,6 +65,20 @@ def steam_file_processor(file_name):
     #set our x and y
     tree_regressor = DecisionTreeRegressor(criterion='mse') # taking Mean Square Error
     
+def steam_data_cleaner():
+    min_owner = 0
+    max_owner = 1
+    df = pd.read_csv("steam.csv")
+    steam_row_length = len(df.index)
+    print(steam_row_length)
+    for i in range(0, steam_row_length):
+        owner_range = df["owners"][i]
+        owner_range_array = owner_range.split("-")
+        min_owner_value = int(owner_range_array[min_owner])
+        max_owner_value = int(owner_range_array[max_owner])
+        owner_avg_value = (min_owner_value + max_owner_value) / len(owner_range_array)
+        df["owners"][i] = owner_avg_value
+    df.to_csv("steam_cleaned.csv")
 
 
 def steam_learning_regression(data):
@@ -83,3 +98,6 @@ def steam_learning_forest(data):
     Trains a random forest model using the given data.
     The trained model is returned.
     """
+
+
+steam_data_cleaner()
