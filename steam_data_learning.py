@@ -6,10 +6,14 @@ Processes data from the steam store and then uses it to learn with Linear Regres
 import numpy as np
 import pandas as pd
 import csv
+from datetime import datetime
 from sklearn import linear_model
 from sklearn import tree
+from sklearn import metrics
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 def steam_file_processor(file_name):
     df = pd.read_csv(file_name)
@@ -105,14 +109,36 @@ def steam_learning_forest(data):
     Trains a random forest model using the given data.
     The trained model is returned.
     """
-    
-
+    X = data.iloc[:, 0:5].values
+    y = data.iloc[:, 5].values
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
+    regressor = RandomForestRegressor(n_estimators=700, random_state=0)
+    regressor.fit(X_train, y_train)
+    y_pred = regressor.predict(X_test)
+    print('Mean Absolute Error: ', metrics.mean_absolute_error(y_test, y_pred))
+    print('Mean Squared Error: ', metrics.mean_squared_error(y_test, y_pred))
+    print('Root Mean Squared Error: ', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
 
 starting_csv = "steam.csv"
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
+
+regression_start = datetime.now()
 #learned_regression = steam_learning_regression(df)
+regression_end = datetime.now()
+regression_total_time = regression_end - regression_start
+print('Regression Total Time: ', regression_total_time)
+
+tree_start = datetime.now()
 #learned_tree = steam_learning_tree(df)
-#learned_forest = steam_learning_forest(df)
+tree_end = datetime.now()
+tree_total_time = tree_end - tree_start
+print('Decision Tree Total Time: ', tree_total_time)
+
+forest_start = datetime.now()
+steam_learning_forest(df)
+forest_end = datetime.now()
+forest_total_time = forest_end - forest_start
+print('Random Forest Total Time: ', forest_total_time)
 
 #then verify results??
