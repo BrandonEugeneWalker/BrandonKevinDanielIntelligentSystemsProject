@@ -6,6 +6,7 @@ Cleans and processes data from the steam store and then uses it to learn with Li
 import numpy as np
 from numpy import mean
 import pandas as pd
+from matplotlib import pyplot as plt
 from datetime import datetime
 from sklearn import linear_model
 from sklearn import tree
@@ -114,6 +115,7 @@ def steam_learning_regression(data):
         preds = regression_model.predict(x_test_fold)
         mse = metrics.mean_squared_error(y_test_fold, preds)
         print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+        steam_learning_model_plot(y_test_fold, preds)
 
         overall_mse.append(mse)
         fold+= 1
@@ -149,6 +151,7 @@ def steam_learning_tree(data):
         preds = tree_classifier.predict(x_test_fold)
         mse = metrics.mean_squared_error(y_test_fold, preds)
         print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+        steam_learning_model_plot(y_test_fold, preds)
 
         overall_mse.append(mse)
         fold+= 1
@@ -185,6 +188,7 @@ def steam_learning_forest(data):
         preds = regressor.predict(x_test_fold)
         mse = metrics.mean_squared_error(y_test_fold, preds)
         print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+        steam_learning_model_plot(y_test_fold, preds)
 
         overall_mse.append(mse)
         fold += 1
@@ -194,26 +198,36 @@ def steam_learning_forest(data):
     print(final_results)
     return final_results
 
+def steam_learning_model_plot(y_test, pred):
+    plt.scatter(y_test, pred)
+    plt.xlabel("Actual Values")
+    plt.ylabel("Predictions")
+
 
 starting_csv = "steam.csv"
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
 
 #Running and timing Regression
+plt.figure("Name", "Multiple Linear Regression Table")
 regression_start = datetime.now()
 regression_results = steam_learning_regression(df)
 regression_end = datetime.now()
 regression_total_time = regression_end - regression_start
 print('Regression Total Time: ', regression_total_time)
 
+
 #Running and timing Decision Tree
+plt.figure("Name", "Decision Tree Table")
 tree_start = datetime.now()
 tree_results = steam_learning_tree(df)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
+plt.figure()
 
 #Running and timing Random Forest
+plt.figure("Name", "Random Forest Table")
 forest_start = datetime.now()
 forest_results = steam_learning_forest(df)
 forest_end = datetime.now()
@@ -230,3 +244,4 @@ print('Total Time: ', tree_total_time)
 print("---Random Forest---")
 print(forest_results)
 print('Total Time: ', forest_total_time)
+plt.show()
