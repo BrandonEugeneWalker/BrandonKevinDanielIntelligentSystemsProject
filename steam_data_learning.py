@@ -86,7 +86,7 @@ def steam_data_cleaner(file_name):
         max_owner_value = int(owner_range_array[max_owner])
         owner_avg_value = (min_owner_value + max_owner_value) / len(owner_range_array)
         df["owners"][i] = owner_avg_value
-    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
+    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"], index=False)
 
 def steam_learning_regression(data):
     """
@@ -94,7 +94,7 @@ def steam_learning_regression(data):
     The trained model is returned.
     """
     NUM_FOLDS = 10
-    regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
+    regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
@@ -132,7 +132,7 @@ def steam_learning_tree(data):
     This is because while it only takes ~5 minutes for the tree folds to run it takes longer for the forest.
     """
     NUM_FOLDS = 10
-    tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"]]
+    tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     tree_label = data[["price"]]
     tree_classifier = DecisionTreeRegressor(criterion="mse")
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
