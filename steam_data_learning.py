@@ -1,11 +1,11 @@
 #/usr/local/bin/python3.7.0
 """
-Processes data from the steam store and then uses it to learn with Linear Regression, Decision Trees, and Random Forests. 
+Cleans and processes data from the steam store and then uses it to learn with Linear Regression, Decision Trees, and Random Forests with k-fold validation. 
 """
 
 import numpy as np
+from numpy import mean
 import pandas as pd
-import csv
 from datetime import datetime
 from sklearn import linear_model
 from sklearn import tree
@@ -15,8 +15,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
-from sklearn.model_selection import StratifiedKFold
-from numpy import mean
 
 def steam_file_processor(file_name):
     df = pd.read_csv(file_name)
@@ -101,7 +99,7 @@ def steam_learning_regression(data):
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
 
-    linear_classifier = linear_model.HuberRegressor()
+    #linear_classifier = linear_model.HuberRegressor()
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
     fold = 0
@@ -112,14 +110,15 @@ def steam_learning_regression(data):
         x_test_fold = [df.loc[i] for i in test_index]
         y_test_fold = [df.loc[i] for i in test_index]
 
-        linear_classifier.fit(x_train_fold, y_train_fold)
-        preds = linear_classifier.predict(x_test_fold)
+        regression_model.fit(x_train_fold, y_train_fold)
+        preds = regression_model.predict(x_test_fold)
         mse = metrics.mean_squared_error(y_test_fold, preds)
         print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
 
         overall_mse.append(mse)
         fold+= 1
-    final_results = str("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    mean_overall = mean(overall_mse)
+    final_results = f"Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -129,7 +128,7 @@ def steam_learning_tree(data):
     Trains a decision tree model using the given data.
     The trained model is returned.
     K-Fold fold amount was decided by running the model with diferent amounts of folds.
-    Taking roughly 32 seconds per fold we decided that 10 folds would be enough.
+    Taking roughly 32 seconds per fold (depends on the computer) we decided that 10 folds would be enough.
     This is because while it only takes ~5 minutes for the tree folds to run it takes longer for the forest.
     """
     NUM_FOLDS = 10
@@ -153,7 +152,8 @@ def steam_learning_tree(data):
 
         overall_mse.append(mse)
         fold+= 1
-    final_results = str("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    mean_overall = mean(overall_mse)
+    final_results = f"Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -169,7 +169,7 @@ def steam_learning_forest(data):
 
     X = data.iloc[:, 0:5].values
     y = data.iloc[:, 5].values
-    skf = StratifiedKFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
+    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
     regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
 
     fold = 0
@@ -189,7 +189,8 @@ def steam_learning_forest(data):
         overall_mse.append(mse)
         fold += 1
     
-    final_results = str("Mean MSE over", NUM_FOLDS, "folds:", mean(overall_mse))
+    mean_overall = mean(overall_mse)
+    final_results = f"Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -222,7 +223,10 @@ print('Random Forest Total Time: ', forest_total_time)
 #Printing results again.
 print("---Linear Regression---")
 print(regression_results)
+print('Total Time: ', regression_total_time)
 print("---Tree Regression---")
 print(tree_results)
+print('Total Time: ', tree_total_time)
 print("---Random Forest---")
 print(forest_results)
+print('Total Time: ', forest_total_time)
