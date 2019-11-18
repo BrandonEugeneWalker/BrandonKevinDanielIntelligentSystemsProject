@@ -98,7 +98,7 @@ def steam_data_cleaner(file_name):
         max_owner_value = int(owner_range_array[max_owner])
         owner_avg_value = (min_owner_value + max_owner_value) / len(owner_range_array)
         df["owners"][i] = owner_avg_value
-    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"], index=False)
+    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
 
 def steam_learning_regression(data):
     """
@@ -107,7 +107,7 @@ def steam_learning_regression(data):
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    NUM_FOLDS = 10
+    NUM_FOLDS = 5
     regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
@@ -145,7 +145,7 @@ def steam_learning_tree(data):
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    NUM_FOLDS = 10
+    NUM_FOLDS = 5
     tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     tree_label = data[["price"]]
     tree_classifier = DecisionTreeRegressor(criterion="mse")
@@ -182,7 +182,7 @@ def steam_learning_forest(data):
     At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
     """
     trees = 200
-    NUM_FOLDS = 10
+    NUM_FOLDS = 5
 
     X = data.iloc[:, 0:5].values
     y = data.iloc[:, 5].values
@@ -222,6 +222,7 @@ def steam_learning_model_plot(y_test, pred):
 
 
 starting_csv = "steam.csv"
+steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
 
