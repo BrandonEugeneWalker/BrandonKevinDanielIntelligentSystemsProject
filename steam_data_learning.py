@@ -100,14 +100,13 @@ def steam_data_cleaner(file_name):
         df["owners"][i] = owner_avg_value
     df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
 
-def steam_learning_regression(data):
+def steam_learning_regression(data, NUM_FOLDS):
     """
     Trains a multiple linear regression model using the given data.
     Uses K-Fold validation with 10 folds.
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    NUM_FOLDS = 5
     regression_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     regression_label = data[["price"]]
     regression_model = linear_model.LinearRegression()
@@ -138,14 +137,13 @@ def steam_learning_regression(data):
     return final_results
 
 
-def steam_learning_tree(data):
+def steam_learning_tree(data, NUM_FOLDS):
     """
     Trains a decision tree model using the given data.
     Uses K-Fold validation with 10 folds.
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    NUM_FOLDS = 5
     tree_train = data[["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime"]]
     tree_label = data[["price"]]
     tree_classifier = DecisionTreeRegressor(criterion="mse")
@@ -172,7 +170,7 @@ def steam_learning_tree(data):
     print(final_results)
     return final_results
 
-def steam_learning_forest(data):
+def steam_learning_forest(data, NUM_FOLDS):
     """
     Trains a random forest model using the given data.
     Uses K-Fold validation with 10 folds.
@@ -182,7 +180,6 @@ def steam_learning_forest(data):
     At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
     """
     trees = 200
-    NUM_FOLDS = 5
 
     X = data.iloc[:, 0:5].values
     y = data.iloc[:, 5].values
@@ -225,11 +222,12 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
+NUM_FOLDS = 5
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
 regression_start = datetime.now()
-regression_results = steam_learning_regression(df)
+regression_results = steam_learning_regression(df, NUM_FOLDS)
 regression_end = datetime.now()
 regression_total_time = regression_end - regression_start
 print('Regression Total Time: ', regression_total_time)
@@ -238,7 +236,7 @@ print('Regression Total Time: ', regression_total_time)
 #Running and timing Decision Tree
 plt.figure("Decision Tree Table")
 tree_start = datetime.now()
-tree_results = steam_learning_tree(df)
+tree_results = steam_learning_tree(df, NUM_FOLDS)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
@@ -246,7 +244,7 @@ print('Decision Tree Total Time: ', tree_total_time)
 #Running and timing Random Forest
 plt.figure("Random Forest Table")
 forest_start = datetime.now()
-forest_results = steam_learning_forest(df)
+forest_results = steam_learning_forest(df, NUM_FOLDS)
 forest_end = datetime.now()
 forest_total_time = forest_end - forest_start
 print('Random Forest Total Time: ', forest_total_time)
