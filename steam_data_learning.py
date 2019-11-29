@@ -19,6 +19,8 @@ from sklearn import metrics
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
+from sklearn import model_selection
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 
@@ -141,7 +143,7 @@ def steam_learning_tree(data, NUM_FOLDS):
     """
     Trains a decision tree model using the given data.
     Uses K-Fold validation with 10 folds.
-    A string describing the results is retuned.
+    A string describing the results is returned.
     Takes roughly 8 minutes to run.
     """
     tree_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
@@ -174,7 +176,7 @@ def steam_learning_forest(data, NUM_FOLDS):
     """
     Trains a random forest model using the given data.
     Uses K-Fold validation with 10 folds.
-    A string describing the results is retuned.
+    A string describing the results is returned.
     Takes roughly 8 minutes to run.
     Number of trees was measured for time efficiency after the rate of decrease in the error diminished. 
     At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
@@ -218,6 +220,17 @@ def steam_learning_boosting(data, NUM_FOLDS):
     """
     Comments here.
     """
+    trees = 200
+    seed = 7
+
+    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    y = data[["price_"]]
+
+    kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
+    model = AdaBoostClassifier(n_estimators=trees, random_state=seed)
+    results = model_selection.cross_val_score(model, X, y, cv=kfold)
+
+    print(results.mean)
 
 def steam_learning_model_plot(y_test, pred):
     """
