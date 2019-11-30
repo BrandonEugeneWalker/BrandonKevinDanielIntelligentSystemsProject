@@ -18,6 +18,7 @@ from sklearn import linear_model
 from sklearn import metrics
 from sklearn import model_selection
 from sklearn import tree
+from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics.scorer import make_scorer
@@ -25,6 +26,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
 
 def steam_file_processor(file_name):
@@ -218,6 +220,23 @@ def steam_learning_bagging(data, NUM_FOLDS):
     """
     Comments here.
     """
+    trees = 200
+    seed = 7
+
+    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    y = data[["price_"]]
+
+    kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
+    base_cls = DecisionTreeClassifier()
+
+    model = BaggingClassifier(base_estimator=base_cls, n_estimators=trees, random_state=seed)
+    mse_scorer = make_scorer(mean_squared_error)
+    results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
+    print(f"unformatted: {results}")
+
+    final_results = f"Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
+    print(final_results)
+    return(final_results)
 
 def steam_learning_boosting(data, NUM_FOLDS):
     """
@@ -232,6 +251,7 @@ def steam_learning_boosting(data, NUM_FOLDS):
     y = data[["price_"]]
 
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
+    
     model = xgb.XGBClassifier()
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
@@ -284,7 +304,7 @@ print('Random Forest Total Time: ', forest_total_time)
 
 #Running and timing Bagging
 bagging_start = datetime.now()
-#bagging_results = steam_learning_bagging(df, NUM_FOLDS)
+bagging_results = steam_learning_bagging(df, NUM_FOLDS)
 bagging_end = datetime.now()
 bagging_total_time = bagging_end - bagging_start
 print('Bagging Total Time: ', bagging_total_time)
@@ -292,7 +312,7 @@ print('Bagging Total Time: ', bagging_total_time)
 #Running and timing Boosting
 #plt.figure("Boosting Table")
 boosting_start = datetime.now()
-boosting_results = steam_learning_boosting(df, NUM_FOLDS)
+#boosting_results = steam_learning_boosting(df, NUM_FOLDS)
 boosting_end = datetime.now()
 boosting_total_time = boosting_end - boosting_start
 print('Ada Boosting Total Time: ', boosting_total_time)
@@ -308,9 +328,9 @@ print("---Random Forest---")
 #print(forest_results)
 print('Total Time: ', forest_total_time)
 print("---Bagging---")
-#print(bagging_results)
+print(bagging_results)
 print('Total Time: ', bagging_total_time)
 print("---Boosting---")
-print(boosting_results)
+#print(boosting_results)
 print('Total Time: ', boosting_total_time)
 plt.show()
