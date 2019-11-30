@@ -19,6 +19,7 @@ from sklearn import metrics
 from sklearn import model_selection
 from sklearn import tree
 from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import BaggingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics.scorer import make_scorer
@@ -218,7 +219,12 @@ def steam_learning_forest(data, NUM_FOLDS):
 
 def steam_learning_bagging(data, NUM_FOLDS):
     """
-    Comments here.
+    Ensemble BaggingRegressor using DecisionRegressor
+    Uses K-Fold validation with NUM_FOLDS folds.
+    A string describing the results is returned.
+    Number of trees was measured for time efficiency after the rate of decrease in the error diminished. 
+    At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
+    Seed set for predictable results
     """
     trees = 200
     seed = 7
@@ -227,11 +233,11 @@ def steam_learning_bagging(data, NUM_FOLDS):
     y = data[["price_"]]
 
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
-    base_cls = DecisionTreeClassifier()
+    base_cls = DecisionTreeRegressor()
 
-    model = BaggingClassifier(base_estimator=base_cls, n_estimators=trees, random_state=seed)
+    model = BaggingRegressor(base_estimator=base_cls, n_estimators=trees, random_state=seed)
     mse_scorer = make_scorer(mean_squared_error)
-    results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
+    results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, error_score='raise', cv=kfold)
     print(f"unformatted: {results}")
 
     final_results = f"Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
@@ -257,7 +263,6 @@ def steam_learning_boosting(data, NUM_FOLDS):
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
     print(f"unformatted: {results}")
 
-    # results.mean is causing a numpy message instead of taking the mean value
     final_results = f"Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
     print(final_results)
     return(final_results)
@@ -275,12 +280,12 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 2
+NUM_FOLDS = 10
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
 regression_start = datetime.now()
-#regression_results = steam_learning_regression(df, NUM_FOLDS)
+regression_results = steam_learning_regression(df, NUM_FOLDS)
 regression_end = datetime.now()
 regression_total_time = regression_end - regression_start
 print('Regression Total Time: ', regression_total_time)
@@ -289,7 +294,7 @@ print('Regression Total Time: ', regression_total_time)
 #Running and timing Decision Tree
 plt.figure("Decision Tree Table")
 tree_start = datetime.now()
-#tree_results = steam_learning_tree(df, NUM_FOLDS)
+tree_results = steam_learning_tree(df, NUM_FOLDS)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
@@ -297,7 +302,7 @@ print('Decision Tree Total Time: ', tree_total_time)
 #Running and timing Random Forest
 plt.figure("Random Forest Table")
 forest_start = datetime.now()
-#forest_results = steam_learning_forest(df, NUM_FOLDS)
+forest_results = steam_learning_forest(df, NUM_FOLDS)
 forest_end = datetime.now()
 forest_total_time = forest_end - forest_start
 print('Random Forest Total Time: ', forest_total_time)
@@ -310,27 +315,26 @@ bagging_total_time = bagging_end - bagging_start
 print('Bagging Total Time: ', bagging_total_time)
 
 #Running and timing Boosting
-#plt.figure("Boosting Table")
 boosting_start = datetime.now()
-#boosting_results = steam_learning_boosting(df, NUM_FOLDS)
+boosting_results = steam_learning_boosting(df, NUM_FOLDS)
 boosting_end = datetime.now()
 boosting_total_time = boosting_end - boosting_start
 print('Ada Boosting Total Time: ', boosting_total_time)
 
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
-#print(regression_results)
+print(regression_results)
 print('Total Time: ', regression_total_time)
 print("---Tree Regression---")
-#print(tree_results)
+print(tree_results)
 print('Total Time: ', tree_total_time)
 print("---Random Forest---")
-#print(forest_results)
+print(forest_results)
 print('Total Time: ', forest_total_time)
 print("---Bagging---")
 print(bagging_results)
 print('Total Time: ', bagging_total_time)
 print("---Boosting---")
-#print(boosting_results)
+print(boosting_results)
 print('Total Time: ', boosting_total_time)
 plt.show()
