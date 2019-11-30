@@ -11,18 +11,19 @@ It takes roughly half an hour to run the entire script.
 import numpy as np
 from numpy import mean
 import pandas as pd
-from matplotlib import pyplot as plt
+import xgboost
 from datetime import datetime
+from matplotlib import pyplot as plt
 from sklearn import linear_model
-from sklearn import tree
 from sklearn import metrics
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 from sklearn import model_selection
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn import tree
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeRegressor
 
 def steam_file_processor(file_name):
     """
@@ -218,24 +219,22 @@ def steam_learning_bagging(data, NUM_FOLDS):
 
 def steam_learning_boosting(data, NUM_FOLDS):
     """
-    AdaBoosting the given data.
     Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
-    Trees are set similar to the ones optimized in the Random Forest algorithm due to similarities
     Seed set for predictable results
     """
-    trees = 200
     seed = 7
 
     X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
+    model = xgboost.XGBClassifier()
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
-    model = AdaBoostClassifier(n_estimators=trees, random_state=seed)
-    results = model_selection.cross_val_score(model, X, y, cv=kfold)
+    results = model_selection.cross_val_score(model, X, y.values.ravel(), cv=kfold)
 
-    print(results.mean)
-    return(results)
+    final_results = f"Mean MSE over {NUM_FOLDS} folds: {results.mean}"
+    print(final_results)
+    return(final_results)
 
 def steam_learning_model_plot(y_test, pred):
     """
@@ -250,12 +249,12 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 5
+NUM_FOLDS = 3
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
 regression_start = datetime.now()
-regression_results = steam_learning_regression(df, NUM_FOLDS)
+#regression_results = steam_learning_regression(df, NUM_FOLDS)
 regression_end = datetime.now()
 regression_total_time = regression_end - regression_start
 print('Regression Total Time: ', regression_total_time)
@@ -264,7 +263,7 @@ print('Regression Total Time: ', regression_total_time)
 #Running and timing Decision Tree
 plt.figure("Decision Tree Table")
 tree_start = datetime.now()
-tree_results = steam_learning_tree(df, NUM_FOLDS)
+#tree_results = steam_learning_tree(df, NUM_FOLDS)
 tree_end = datetime.now()
 tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
@@ -272,7 +271,7 @@ print('Decision Tree Total Time: ', tree_total_time)
 #Running and timing Random Forest
 plt.figure("Random Forest Table")
 forest_start = datetime.now()
-forest_results = steam_learning_forest(df, NUM_FOLDS)
+#forest_results = steam_learning_forest(df, NUM_FOLDS)
 forest_end = datetime.now()
 forest_total_time = forest_end - forest_start
 print('Random Forest Total Time: ', forest_total_time)
@@ -285,6 +284,7 @@ bagging_total_time = bagging_end - bagging_start
 print('Bagging Total Time: ', bagging_total_time)
 
 #Running and timing Boosting
+#plt.figure("Ada Boosting Table")
 boosting_start = datetime.now()
 boosting_results = steam_learning_boosting(df, NUM_FOLDS)
 boosting_end = datetime.now()
@@ -293,13 +293,13 @@ print('Ada Boosting Total Time: ', boosting_total_time)
 
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
-print(regression_results)
+#print(regression_results)
 print('Total Time: ', regression_total_time)
 print("---Tree Regression---")
-print(tree_results)
+#print(tree_results)
 print('Total Time: ', tree_total_time)
 print("---Random Forest---")
-print(forest_results)
+#print(forest_results)
 print('Total Time: ', forest_total_time)
 print("---Bagging---")
 #print(bagging_results)
