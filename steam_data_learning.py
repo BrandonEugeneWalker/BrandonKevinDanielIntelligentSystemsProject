@@ -218,7 +218,11 @@ def steam_learning_bagging(data, NUM_FOLDS):
 
 def steam_learning_boosting(data, NUM_FOLDS):
     """
-    Comments here.
+    AdaBoosting the given data.
+    Uses K-Fold validation with 10 folds.
+    A string describing the results is returned.
+    Trees are set similar to the ones optimized in the Random Forest algorithm due to similarities
+    Seed set for predictable results
     """
     trees = 200
     seed = 7
@@ -231,6 +235,7 @@ def steam_learning_boosting(data, NUM_FOLDS):
     results = model_selection.cross_val_score(model, X, y, cv=kfold)
 
     print(results.mean)
+    return(results)
 
 def steam_learning_model_plot(y_test, pred):
     """
@@ -272,6 +277,20 @@ forest_end = datetime.now()
 forest_total_time = forest_end - forest_start
 print('Random Forest Total Time: ', forest_total_time)
 
+#Running and timing Bagging
+bagging_start = datetime.now()
+#bagging_results = steam_learning_bagging(df, NUM_FOLDS)
+bagging_end = datetime.now()
+bagging_total_time = bagging_end - bagging_start
+print('Bagging Total Time: ', bagging_total_time)
+
+#Running and timing Boosting
+boosting_start = datetime.now()
+boosting_results = steam_learning_boosting(df, NUM_FOLDS)
+boosting_end = datetime.now()
+boosting_total_time = boosting_end - boosting_start
+print('Ada Boosting Total Time: ', boosting_total_time)
+
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
 print(regression_results)
@@ -282,4 +301,10 @@ print('Total Time: ', tree_total_time)
 print("---Random Forest---")
 print(forest_results)
 print('Total Time: ', forest_total_time)
+print("---Bagging---")
+#print(bagging_results)
+print('Total Time: ', bagging_total_time)
+print("---Boosting---")
+print(boosting_results)
+print('Total Time: ', boosting_total_time)
 plt.show()
