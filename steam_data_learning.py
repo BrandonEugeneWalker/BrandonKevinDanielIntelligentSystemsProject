@@ -105,7 +105,7 @@ def steam_data_cleaner(file_name):
 def steam_learning_regression(data, NUM_FOLDS):
     """
     Trains a multiple linear regression model using the given data.
-    Uses K-Fold validation with 10 folds.
+    Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
@@ -142,7 +142,7 @@ def steam_learning_regression(data, NUM_FOLDS):
 def steam_learning_tree(data, NUM_FOLDS):
     """
     Trains a decision tree model using the given data.
-    Uses K-Fold validation with 10 folds.
+    Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
     Takes roughly 8 minutes to run.
     """
@@ -175,7 +175,7 @@ def steam_learning_tree(data, NUM_FOLDS):
 def steam_learning_forest(data, NUM_FOLDS):
     """
     Trains a random forest model using the given data.
-    Uses K-Fold validation with 10 folds.
+    Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
     Takes roughly 8 minutes to run.
     Number of trees was measured for time efficiency after the rate of decrease in the error diminished. 
@@ -219,7 +219,7 @@ def steam_learning_bagging(data, NUM_FOLDS):
 def steam_learning_boosting(data, NUM_FOLDS):
     """
     AdaBoosting the given data.
-    Uses K-Fold validation with 10 folds.
+    Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
     Trees are set similar to the ones optimized in the Random Forest algorithm due to similarities
     Seed set for predictable results
