@@ -107,7 +107,7 @@ def steam_learning_regression(data, NUM_FOLDS):
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    regression_train = data[["owners_"]]
+    regression_train = data[["average_playtime_"]]
     regression_label = data[["price_"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
@@ -144,7 +144,7 @@ def steam_learning_tree(data, NUM_FOLDS):
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    tree_train = data[["owners_"]]
+    tree_train = data[["average_playtime_"]]
     tree_label = data[["price_"]]
     tree_classifier = DecisionTreeRegressor(criterion="mse")
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
@@ -181,7 +181,7 @@ def steam_learning_forest(data, NUM_FOLDS):
     """
     trees = 200
 
-    X = data[["owners_"]]
+    X = data[["average_playtime_"]]
     y = data[["price_"]]
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
     regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
