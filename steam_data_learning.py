@@ -11,7 +11,7 @@ It takes roughly half an hour to run the entire script.
 import numpy as np
 from numpy import mean
 import pandas as pd
-import xgboost
+import xgboost as xgb
 from datetime import datetime
 from matplotlib import pyplot as plt
 from sklearn import linear_model
@@ -19,6 +19,8 @@ from sklearn import metrics
 from sklearn import model_selection
 from sklearn import tree
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics.scorer import make_scorer
 from sklearn.model_selection import KFold
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
@@ -228,10 +230,13 @@ def steam_learning_boosting(data, NUM_FOLDS):
     X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
-    model = xgboost.XGBClassifier()
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
-    results = model_selection.cross_val_score(model, X, y.values.ravel(), cv=kfold)
+    model = xgb.XGBClassifier()
+    mse_scorer = make_scorer(mean_squared_error)
+    results = cross_val_score(model, X, y, scoring=mse_scorer, cv=kfold)
+    print(f"unformatted: {results}")
 
+    # results.mean is causing a numpy message instead of taking the mean value
     final_results = f"Mean MSE over {NUM_FOLDS} folds: {results.mean}"
     print(final_results)
     return(final_results)
@@ -249,7 +254,7 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 3
+NUM_FOLDS = 2
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
