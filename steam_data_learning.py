@@ -140,7 +140,7 @@ def steam_learning_regression(data, NUM_FOLDS):
         overall_mse.append(mse)
         fold+= 1
     mean_overall = mean(overall_mse)
-    final_results = f"Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -174,7 +174,7 @@ def steam_learning_tree(data, NUM_FOLDS):
         overall_mse.append(mse)
         fold+= 1
     mean_overall = mean(overall_mse)
-    final_results = f"Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    final_results = f"Tree - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -213,7 +213,7 @@ def steam_learning_forest(data, NUM_FOLDS):
         fold += 1
     
     mean_overall = mean(overall_mse)
-    final_results = f"Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    final_results = f"Forest - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -238,9 +238,9 @@ def steam_learning_bagging(data, NUM_FOLDS):
     model = BaggingRegressor(base_estimator=base_cls, n_estimators=trees, random_state=seed)
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, error_score='raise', cv=kfold)
-    print(f"unformatted: {results}")
+    print(f"Bagging - MSE Array: {results}")
 
-    final_results = f"Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
+    final_results = f"Bagging - Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
     print(final_results)
     return(final_results)
 
@@ -261,9 +261,9 @@ def steam_learning_boosting(data, NUM_FOLDS):
     model = xgb.XGBClassifier()
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
-    print(f"unformatted: {results}")
+    print(f"Boosting - MSE Array: {results}")
 
-    final_results = f"Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
+    final_results = f"Boosting - Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
     print(final_results)
     return(final_results)
 
