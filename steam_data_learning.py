@@ -11,15 +11,14 @@ It takes roughly half an hour to run the entire script.
 import numpy as np
 from numpy import mean
 import pandas as pd
-import xgboost as xgb
 from datetime import datetime
 from matplotlib import pyplot as plt
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn import model_selection
 from sklearn import tree
-from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics.scorer import make_scorer
@@ -53,17 +52,22 @@ def steam_data_cleaner(file_name):
     The final results are saved as a new csv file named steam_cleaned.csv.
 
     Used Columns: 
-        positive_ratings, negative_ratings, owners, average_playtime, median_playtime, and price
+        positive_ratings, owners, average_playtime, median_playtime, and price
 
     Unused Columns: 
-        appid, name, release_date, english, developer, publisher, platforms, required_age, categories, genres, steamspy_tags, achievements
+        negative_ratings, appid, name, release_date, english, developer, publisher, platforms, required_age, categories, genres, steamspy_tags, achievements
 
     Columns that need cleaning: 
+        positive_ratings
+            By dividing positive_ratings by the total number of ratings (positive and negative) and multiplying by 100, we can obtain a
+            percentage for potentially optimal data usage
         owners
             Owners is a range between two numbers, therefore for us to be able to use it we need to transform the data into a singular
             value that is easy to understand and use. This value will simply be the average of the two range values.
 
     Why certain columns were removed:
+        negative_ratings
+            Combined into the Positive_Ratings column to get a percentage
         appid
             There is no correlation between the appid (a id used by steam that is not seen by the user) and the price of a game.
             Including this column would simply create noise for what we want to predict.
@@ -254,7 +258,7 @@ def steam_learning_bagging(data, NUM_FOLDS):
 
 def steam_learning_boosting(data, NUM_FOLDS):
     """
-    Using XGBoostClassifier to boost over each fold
+    Ensemble BoostingRegressor to boost over each fold
     Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
     Seed set for predictable results
@@ -266,7 +270,7 @@ def steam_learning_boosting(data, NUM_FOLDS):
 
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
     
-    model = xgb.XGBClassifier()
+    model = GradientBoostingRegressor()
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
     print(f"Boosting - MSE Array: {results}")
@@ -288,7 +292,7 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 10
+NUM_FOLDS = 5
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
