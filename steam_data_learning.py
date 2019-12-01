@@ -245,7 +245,7 @@ def steam_learning_bagging(data, NUM_FOLDS):
 
 def steam_learning_boosting(data, NUM_FOLDS):
     """
-    Using XGBoostClassifier to boost over each fold
+    Ensemble BoostingRegressor to boost over each fold
     Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
     Seed set for predictable results
@@ -318,7 +318,7 @@ boosting_start = datetime.now()
 boosting_results = steam_learning_boosting(df, NUM_FOLDS)
 boosting_end = datetime.now()
 boosting_total_time = boosting_end - boosting_start
-print('Ada Boosting Total Time: ', boosting_total_time)
+print('Boosting Total Time: ', boosting_total_time)
 
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
