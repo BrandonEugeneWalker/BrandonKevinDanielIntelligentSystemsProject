@@ -38,7 +38,6 @@ def steam_file_processor(file_name):
     """
     df = pd.read_csv(file_name)
     df['positive_ratings_'] = df['positive_ratings'].astype(int)
-    df['negative_ratings_'] = df['negative_ratings'].astype(int)
     df['owners_'] = df['owners'].astype(float)
     df['average_playtime_'] = df['average_playtime'].astype(int)
     df['median_playtime_'] = df['median_playtime'].astype(int)
@@ -106,7 +105,16 @@ def steam_data_cleaner(file_name):
         max_owner_value = int(owner_range_array[max_owner])
         owner_avg_value = (min_owner_value + max_owner_value) / len(owner_range_array)
         df["owners"][i] = owner_avg_value
-    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "negative_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
+
+        negative_rate = df["negative_ratings"][i]
+        positive_rate = df["positive_ratings"][i]
+        negative_value = int(negative_rate)
+        positive_value = int(positive_rate)
+        total_ratings = negative_value + positive_value
+        review_score = positive_value / total_ratings * 100
+        df["positive_ratings"][i] = review_score
+
+    df.to_csv("steam_cleaned.csv", columns=["positive_ratings", "owners", "average_playtime", "median_playtime", "price"], index=False)
 
 def steam_learning_regression(data, NUM_FOLDS):
     """
@@ -115,7 +123,7 @@ def steam_learning_regression(data, NUM_FOLDS):
     A string describing the results is retuned.
     Takes roughly 8 minutes to run.
     """
-    regression_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    regression_train = data[["positive_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     regression_label = data[["price_"]]
     regression_model = linear_model.LinearRegression()
     regression_model.fit(regression_train, regression_label)
@@ -152,7 +160,7 @@ def steam_learning_tree(data, NUM_FOLDS):
     A string describing the results is returned.
     Takes roughly 8 minutes to run.
     """
-    tree_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    tree_train = data[["positive_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     tree_label = data[["price_"]]
     tree_classifier = DecisionTreeRegressor(criterion="mse")
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
@@ -189,7 +197,7 @@ def steam_learning_forest(data, NUM_FOLDS):
     """
     trees = 200
 
-    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    X = data[["positive_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
     regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
@@ -229,7 +237,7 @@ def steam_learning_bagging(data, NUM_FOLDS):
     trees = 200
     seed = 7
 
-    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    X = data[["positive_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
@@ -253,7 +261,7 @@ def steam_learning_boosting(data, NUM_FOLDS):
     """
     seed = 7
 
-    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    X = data[["positive_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
