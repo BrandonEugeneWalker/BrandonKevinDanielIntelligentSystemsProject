@@ -11,15 +11,14 @@ It takes roughly half an hour to run the entire script.
 import numpy as np
 from numpy import mean
 import pandas as pd
-import xgboost as xgb
 from datetime import datetime
 from matplotlib import pyplot as plt
 from sklearn import linear_model
 from sklearn import metrics
 from sklearn import model_selection
 from sklearn import tree
-from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics.scorer import make_scorer
@@ -258,7 +257,7 @@ def steam_learning_boosting(data, NUM_FOLDS):
 
     kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
     
-    model = xgb.XGBClassifier()
+    model = GradientBoostingRegressor()
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
     print(f"Boosting - MSE Array: {results}")
@@ -280,7 +279,7 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 10
+NUM_FOLDS = 5
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
