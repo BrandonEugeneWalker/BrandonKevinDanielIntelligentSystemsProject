@@ -17,6 +17,7 @@ from sklearn import linear_model
 from sklearn import metrics
 from sklearn import model_selection
 from sklearn import tree
+from sklearn.ensemble import AdaBoostRegressor
 from sklearn.ensemble import BaggingRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -119,11 +120,11 @@ def steam_learning_regression(data, NUM_FOLDS):
     regression_label = data[["price_"]]
     regression_model = linear_model.LinearRegression()
 
-    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
+    kfold = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
     mse_scorer = make_scorer(mean_squared_error)
-    results = cross_val_score(regression_model, regression_train, regression_label, scoring=mse_scorer, cv=skf)
-    print(f"Boosting - MSE Array: {results}")
+    results = cross_val_score(regression_model, regression_train, regression_label, scoring=mse_scorer, cv=kfold)
+    print(f"Regression - MSE Array: {results}")
 
     mean_overall = np.mean(results)
     final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
@@ -141,14 +142,14 @@ def steam_learning_tree(data, NUM_FOLDS):
     tree_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     tree_label = data[["price_"]]
     tree_regression = DecisionTreeRegressor(criterion="mse")
-    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
+    kfold = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
     mse_scorer = make_scorer(mean_squared_error)
-    results = cross_val_score(tree_regression, tree_train, tree_label, scoring=mse_scorer, cv=skf)
-    print(f"Boosting - MSE Array: {results}")
+    results = cross_val_score(tree_regression, tree_train, tree_label, scoring=mse_scorer, cv=kfold)
+    print(f"Decision Tree - MSE Array: {results}")
 
     mean_overall = np.mean(results)
-    final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    final_results = f"Decision Tree - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -166,15 +167,15 @@ def steam_learning_forest(data, NUM_FOLDS):
     forest_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     forest_label = data[["price_"]]
     
-    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
+    kfold = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
     forest_regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
 
     mse_scorer = make_scorer(mean_squared_error)
-    results = cross_val_score(forest_regressor, forest_train, forest_label.values.ravel(), scoring=mse_scorer, cv=skf)
-    print(f"Boosting - MSE Array: {results}")
+    results = cross_val_score(forest_regressor, forest_train, forest_label.values.ravel(), scoring=mse_scorer, cv=kfold)
+    print(f"Random Forest - MSE Array: {results}")
 
     mean_overall = np.mean(results)
-    final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    final_results = f"Random Forest - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -207,19 +208,23 @@ def steam_learning_bagging(data, NUM_FOLDS):
 
 def steam_learning_boosting(data, NUM_FOLDS):
     """
-    Ensemble BoostingRegressor to boost over each fold
+    Ensemble AdaBoosting to boost over each fold
     Uses K-Fold validation with NUM_FOLDS folds.
     A string describing the results is returned.
+    Number of trees was measured for time efficiency after the rate of decrease in the error diminished. 
+    At ~200, this peaks. If we choose arbitrarily larger, 1500 trees, we only achieve a decrease in the thousandths.
     Seed set for predictable results
     """
+    trees = 200
     seed = 7
 
     X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
-    kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
+    kfold = KFold(n_splits=NUM_FOLDS)
+
+    model = AdaBoostRegressor(n_estimators=trees, random_state=seed)
     
-    model = GradientBoostingRegressor()
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
     print(f"Boosting - MSE Array: {results}")
@@ -255,7 +260,7 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 5
+NUM_FOLDS = 10
 
 #Running and timing Regression
 regression_start = datetime.now()
