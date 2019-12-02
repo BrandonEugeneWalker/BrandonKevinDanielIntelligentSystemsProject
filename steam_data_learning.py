@@ -28,6 +28,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import VotingRegressor
 
 def steam_file_processor(file_name):
     """
@@ -227,6 +228,29 @@ def steam_learning_boosting(data, NUM_FOLDS):
     print(final_results)
     return(final_results)
 
+def steam_learning_voting(data, NUM_FOLDS):
+    """
+    Voting regressor that combines different types of regressors to try and overcome their weaknesses.
+    """
+    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    y = data[["price_"]]
+
+
+    kfold = KFold(n_splits=NUM_FOLDS)
+
+    gradient_boosting_model = GradientBoostingRegressor(random_state=1, n_estimators=20)
+    random_forest_model = RandomForestRegressor(random_state=1, n_estimators=20)
+    linear_regression_model = linear_model.LinearRegression()
+    voting_model = VotingRegressor(estimators=[('gb', gradient_boosting_model), ('rf', random_forest_model), ('lr', linear_regression_model)])
+    mse_scorer = make_scorer(mean_squared_error)
+
+    results = cross_val_score(voting_model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
+    print(f"Boosting - MSE Array: {results}")
+
+    final_results = f"Voting - Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
+    print(final_results)
+    return(final_results)
+
 starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
@@ -269,6 +293,13 @@ boosting_end = datetime.now()
 boosting_total_time = boosting_end - boosting_start
 print('Boosting Total Time: ', boosting_total_time)
 
+#Running and timing Voting
+voting_start = datetime.now()
+voting_results = steam_learning_voting(df, NUM_FOLDS)
+voting_end = datetime.now()
+voting_total_time = voting_end - voting_start
+print('Voting Total Time', voting_total_time)
+
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
 print(regression_results)
@@ -285,3 +316,6 @@ print('Total Time: ', bagging_total_time)
 print("---Boosting---")
 print(boosting_results)
 print('Total Time: ', boosting_total_time)
+print("---Voting---")
+print(voting_results)
+print("Total Time: ", voting_total_time)
