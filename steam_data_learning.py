@@ -268,7 +268,7 @@ def steam_best_model_test(data):
     linear_regression_model = linear_model.LinearRegression()
     voting_model = VotingRegressor(estimators=[('gb', gradient_boosting_model), ('rf', random_forest_model), ('lr', linear_regression_model)])
 
-    voting_model.fit(X_train, y_train)
+    voting_model.fit(X_train, y_train.values.ravel())
     preds = voting_model.predict(X_test)
     mse = mean_squared_error(y_test, preds)
     return np.mean(mse)
