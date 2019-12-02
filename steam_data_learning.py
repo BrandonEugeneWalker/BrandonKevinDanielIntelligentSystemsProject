@@ -235,11 +235,25 @@ def steam_learning_bagging(data, NUM_FOLDS):
     base_cls = DecisionTreeRegressor()
 
     model = BaggingRegressor(base_estimator=base_cls, n_estimators=trees, random_state=seed)
-    mse_scorer = make_scorer(mean_squared_error)
-    results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, error_score='raise', cv=kfold)
-    print(f"Bagging - MSE Array: {results}")
+    fold = 0
+    overall_mse = []
+    for train_index, test_index in kfold.split(X, y):
 
-    final_results = f"Bagging - Mean MSE over {NUM_FOLDS} folds: {np.mean(results)}"
+        x_train_fold = [df.loc[i] for i in train_index]
+        y_train_fold = [df.loc[i] for i in train_index]
+        x_test_fold = [df.loc[i] for i in test_index]
+        y_test_fold = [df.loc[i] for i in test_index]
+
+        model.fit(x_train_fold, y_train_fold)
+        preds = model.predict(x_test_fold)
+        mse = metrics.mean_squared_error(y_test_fold, preds)
+        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
+
+        overall_mse.append(mse)
+        fold += 1
+    
+    mean_overall = mean(overall_mse)
+    final_results = f"Bagging - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return(final_results)
 
@@ -279,7 +293,7 @@ starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 5
+NUM_FOLDS = 2
 
 #Running and timing Regression
 plt.figure("Multiple Linear Regression Table")
