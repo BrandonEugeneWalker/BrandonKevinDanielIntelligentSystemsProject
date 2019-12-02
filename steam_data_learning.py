@@ -189,15 +189,14 @@ def steam_learning_bagging(data, NUM_FOLDS):
     Seed set for predictable results
     """
     trees = 200
-    seed = 7
 
     X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
-    kfold = KFold(n_splits=NUM_FOLDS, random_state=seed)
+    kfold = KFold(n_splits=NUM_FOLDS)
     base_cls = DecisionTreeRegressor()
 
-    model = BaggingRegressor(base_estimator=base_cls, n_estimators=trees, random_state=seed)
+    model = BaggingRegressor(base_estimator=base_cls, n_estimators=trees)
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, error_score='raise', cv=kfold)
     print(f"Bagging - MSE Array: {results}")
@@ -216,14 +215,13 @@ def steam_learning_boosting(data, NUM_FOLDS):
     Seed set for predictable results
     """
     trees = 200
-    seed = 7
 
     X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     y = data[["price_"]]
 
     kfold = KFold(n_splits=NUM_FOLDS)
 
-    model = AdaBoostRegressor(n_estimators=trees, random_state=seed)
+    model = AdaBoostRegressor(n_estimators=trees)
     
     mse_scorer = make_scorer(mean_squared_error)
     results = cross_val_score(model, X, y.values.ravel(), scoring=mse_scorer, cv=kfold)
@@ -256,11 +254,31 @@ def steam_learning_voting(data, NUM_FOLDS):
     print(final_results)
     return(final_results)
 
+def steam_best_model_test(data):
+    """
+    Fits the best model with 90% of our data then predicts on the remaining 10%.
+    This simulates a "Real world situation"
+    """
+    best_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    best_label = data[["price_"]]
+    X_train, X_test, y_train, y_test = train_test_split(best_train, best_label, test_size=0.1, random_state=2)
+
+    gradient_boosting_model = GradientBoostingRegressor(random_state=1, n_estimators=20)
+    random_forest_model = RandomForestRegressor(random_state=1, n_estimators=20)
+    linear_regression_model = linear_model.LinearRegression()
+    voting_model = VotingRegressor(estimators=[('gb', gradient_boosting_model), ('rf', random_forest_model), ('lr', linear_regression_model)])
+
+    voting_model.fit(X_train, y_train)
+    preds = voting_model.predict(X_test)
+    mse = mean_squared_error(y_test, preds)
+    return np.mean(mse)
+
+
 starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
 df = steam_file_processor(clean_csv)
-NUM_FOLDS = 10
+NUM_FOLDS = 20
 
 #Running and timing Regression
 regression_start = datetime.now()
@@ -305,6 +323,9 @@ voting_end = datetime.now()
 voting_total_time = voting_end - voting_start
 print('Voting Total Time', voting_total_time)
 
+#Running best model with all data.
+best_results = steam_best_model_test(df)
+
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
 print(regression_results)
@@ -324,3 +345,6 @@ print('Total Time: ', boosting_total_time)
 print("---Voting---")
 print(voting_results)
 print("Total Time: ", voting_total_time)
+print("\n\n\n\n")
+print("---Best Model (Voting)---")
+print("MSE for predicting with new data: ", best_results)
