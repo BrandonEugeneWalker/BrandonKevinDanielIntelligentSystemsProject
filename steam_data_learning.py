@@ -117,28 +117,14 @@ def steam_learning_regression(data, NUM_FOLDS):
     regression_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     regression_label = data[["price_"]]
     regression_model = linear_model.LinearRegression()
-    regression_model.fit(regression_train, regression_label)
 
-    #linear_classifier = linear_model.HuberRegressor()
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
-    fold = 0
-    overall_mse = []
-    for train_index, test_index in skf.split(regression_train, regression_label):
-        x_train_fold = [df.loc[i] for i in train_index]
-        y_train_fold = [df.loc[i] for i in train_index]
-        x_test_fold = [df.loc[i] for i in test_index]
-        y_test_fold = [df.loc[i] for i in test_index]
+    mse_scorer = make_scorer(mean_squared_error)
+    results = cross_val_score(regression_model, regression_train, regression_label, scoring=mse_scorer, cv=skf)
+    print(f"Boosting - MSE Array: {results}")
 
-        regression_model.fit(x_train_fold, y_train_fold)
-        preds = regression_model.predict(x_test_fold)
-        mse = metrics.mean_squared_error(y_test_fold, preds)
-        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
-        steam_learning_model_plot(y_test_fold, preds)
-
-        overall_mse.append(mse)
-        fold+= 1
-    mean_overall = mean(overall_mse)
+    mean_overall = np.mean(results)
     final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
@@ -153,27 +139,15 @@ def steam_learning_tree(data, NUM_FOLDS):
     """
     tree_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
     tree_label = data[["price_"]]
-    tree_classifier = DecisionTreeRegressor(criterion="mse")
+    tree_regression = DecisionTreeRegressor(criterion="mse")
     skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
 
-    fold = 0
-    overall_mse = []
-    for train_index, test_index in skf.split(tree_train, tree_label):
-        x_train_fold = [df.loc[i] for i in train_index]
-        y_train_fold = [df.loc[i] for i in train_index]
-        x_test_fold = [df.loc[i] for i in test_index]
-        y_test_fold = [df.loc[i] for i in test_index]
+    mse_scorer = make_scorer(mean_squared_error)
+    results = cross_val_score(tree_regression, tree_train, tree_label, scoring=mse_scorer, cv=skf)
+    print(f"Boosting - MSE Array: {results}")
 
-        tree_classifier.fit(x_train_fold, y_train_fold)
-        preds = tree_classifier.predict(x_test_fold)
-        mse = metrics.mean_squared_error(y_test_fold, preds)
-        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
-        steam_learning_model_plot(y_test_fold, preds)
-
-        overall_mse.append(mse)
-        fold+= 1
-    mean_overall = mean(overall_mse)
-    final_results = f"Tree - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    mean_overall = np.mean(results)
+    final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -188,31 +162,18 @@ def steam_learning_forest(data, NUM_FOLDS):
     """
     trees = 200
 
-    X = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
-    y = data[["price_"]]
-    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
-    regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
-
-    fold = 0
-    overall_mse = []
-    for train_index, test_index in skf.split(X, y):
-
-        x_train_fold = [df.loc[i] for i in train_index]
-        y_train_fold = [df.loc[i] for i in train_index]
-        x_test_fold = [df.loc[i] for i in test_index]
-        y_test_fold = [df.loc[i] for i in test_index]
-
-        regressor.fit(x_train_fold, y_train_fold)
-        preds = regressor.predict(x_test_fold)
-        mse = metrics.mean_squared_error(y_test_fold, preds)
-        print("fold", fold, "#train:", len(train_index), "#test:", len(preds), "total:", (len(train_index) + len(preds)), "MSE:", mse)
-        steam_learning_model_plot(y_test_fold, preds)
-
-        overall_mse.append(mse)
-        fold += 1
+    forest_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    forest_label = data[["price_"]]
     
-    mean_overall = mean(overall_mse)
-    final_results = f"Forest - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
+    skf = KFold(n_splits=NUM_FOLDS, random_state=None, shuffle=True)
+    forest_regressor = RandomForestRegressor(n_estimators=trees, random_state=0)
+
+    mse_scorer = make_scorer(mean_squared_error)
+    results = cross_val_score(forest_regressor, forest_train, forest_label.values.ravel(), scoring=mse_scorer, cv=skf)
+    print(f"Boosting - MSE Array: {results}")
+
+    mean_overall = np.mean(results)
+    final_results = f"Regression - Mean MSE over {NUM_FOLDS} folds: {mean_overall}"
     print(final_results)
     return final_results
 
@@ -266,15 +227,6 @@ def steam_learning_boosting(data, NUM_FOLDS):
     print(final_results)
     return(final_results)
 
-def steam_learning_model_plot(y_test, pred):
-    """
-    Plots the given data in a matplotlib scatter plot.
-    """
-    plt.scatter(y_test, pred)
-    plt.xlabel("Actual Values")
-    plt.ylabel("Predictions")
-
-
 starting_csv = "steam.csv"
 steam_data_cleaner(starting_csv)
 clean_csv = "steam_cleaned.csv"
@@ -282,7 +234,6 @@ df = steam_file_processor(clean_csv)
 NUM_FOLDS = 5
 
 #Running and timing Regression
-plt.figure("Multiple Linear Regression Table")
 regression_start = datetime.now()
 regression_results = steam_learning_regression(df, NUM_FOLDS)
 regression_end = datetime.now()
@@ -291,7 +242,6 @@ print('Regression Total Time: ', regression_total_time)
 
 
 #Running and timing Decision Tree
-plt.figure("Decision Tree Table")
 tree_start = datetime.now()
 tree_results = steam_learning_tree(df, NUM_FOLDS)
 tree_end = datetime.now()
@@ -299,7 +249,6 @@ tree_total_time = tree_end - tree_start
 print('Decision Tree Total Time: ', tree_total_time)
 
 #Running and timing Random Forest
-plt.figure("Random Forest Table")
 forest_start = datetime.now()
 forest_results = steam_learning_forest(df, NUM_FOLDS)
 forest_end = datetime.now()
@@ -336,4 +285,3 @@ print('Total Time: ', bagging_total_time)
 print("---Boosting---")
 print(boosting_results)
 print('Total Time: ', boosting_total_time)
-plt.show()
