@@ -249,6 +249,23 @@ def steam_learning_voting(data, NUM_FOLDS):
     print(final_results)
     return(final_results)
 
+def steam_voting_predict_learned(data):
+    """
+    Runs the voting model with the values to predict already being in the model.
+    """
+    pre_learned_train = data[["positive_ratings_", "negative_ratings_", "owners_", "average_playtime_", "median_playtime_"]]
+    pre_learned_label = data[["price_"]]
+
+    gradient_boosting_model = GradientBoostingRegressor(random_state=1, n_estimators=20)
+    random_forest_model = RandomForestRegressor(random_state=1, n_estimators=20)
+    linear_regression_model = linear_model.LinearRegression()
+    voting_model = VotingRegressor(estimators=[('gb', gradient_boosting_model), ('rf', random_forest_model), ('lr', linear_regression_model)])
+
+    voting_model.fit(pre_learned_train, pre_learned_label.values.ravel())
+    preds = voting_model.predict(pre_learned_train)
+    mse = mean_squared_error(pre_learned_label, preds)
+    return np.mean(mse)
+
 def steam_best_model_test(data):
     """
     Fits the best model with 90% of our data then predicts on the remaining 10%.
@@ -321,6 +338,9 @@ print('Voting Total Time', voting_total_time)
 #Running best model with all data.
 best_results = steam_best_model_test(df)
 
+#Running model with already learned data.
+learned_results = steam_voting_predict_learned(df)
+
 #Printing results again and showing scatter plots.
 print("---Linear Regression---")
 print(regression_results)
@@ -343,3 +363,5 @@ print("Total Time: ", voting_total_time)
 print("\n\n\n\n")
 print("---Best Model (Voting)---")
 print("MSE for predicting with new data: ", best_results)
+print("---Voting Pre-Learned---")
+print("MSE for predicting with already used data: ", learned_results)
